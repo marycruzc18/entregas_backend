@@ -1,0 +1,25 @@
+<div class="container-fluid">
+    <div class="row">
+        <header class="bg-dark text-white p-3">
+        <h1>Bienvenidos al Ecommerce</h1> 
+         </header>
+    </div>
+</div>
+
+
+<body>
+  <div class="container-fluid">
+  <div class="row">
+    <div class="col-12 m-t 3">
+        <h1>Productos</h1>
+        <ul>
+        {{#each products}}
+          <li>{{id}} - {{title}} - {{description}} - {{price}} - {{thumbnail}} - {{code}}- {{stock}} - {{status}}- {{category}}</li>
+        {{/each}}
+      </ul>
+    </div>
+</div>
+
+</div>
+
+</body>

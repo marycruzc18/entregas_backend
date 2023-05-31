@@ -1,0 +1,44 @@
+[
+  {
+    "id": 9,
+    "title": "Lentes",
+    "description": "Lentes Negros",
+    "price": 2400,
+    "thumbnail": "sin foto",
+    "code": 5260,
+    "stock": 30,
+    "status": "true",
+    "category": "lentes"
+  },
+  {
+    "id": 10,
+    "title": "Lentes",
+    "description": "Lentes rosados",
+    "price": 2450,
+    "thumbnail": "sin foto",
+    "code": 5261,
+    "stock": 25,
+    "status": "true",
+    "category": "lentes"
+  },
+  {
+    "id": 3,
+    "products": [
+      {
+        "title": "Lentes",
+        "description": "Lentes rosados",
+        "price": 2450,
+        "thumbnail": "sin foto",
+        "code": 5261,
+        "stock": 25,
+        "status": "true",
+        "category": "lentes",
+        "id": 10
+      }
+    ]
+  },
+  {
+    "id": 4,
+    "products": []
+  }
+]

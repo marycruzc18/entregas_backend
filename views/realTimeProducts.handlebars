@@ -1,0 +1,50 @@
+<div class="container-fluid">
+    <div class="row">
+        <header class="bg-dark text-white p-3">
+        <h1>Bienvenidos al Ecommerce</h1> 
+         </header>
+    </div>
+</div>
+
+
+<body>
+  <div class="container-fluid">
+  <div class="row">
+    <div class="col-12 m-t 3">
+        <h1>Productos</h1>
+        <ul id="product-list">
+          
+        {{#each products}}
+          <li>{{id}} - {{title}} - {{description}} - {{price}} - {{thumbnail}} - {{code}}- {{stock}} - {{status}}- {{category}}</li>
+        {{/each}}
+      
+      </ul>
+    </div>
+</div>
+
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.6.1/socket.io.js"></script>
+    <script>
+        const socket = io('ws://localhost:3000');
+        
+        socket.on('connect', () => { 
+        socket.on('server_confirm', (msg) => {
+        console.log('El servidor ha confirmado la conexión');
+        });
+ socket.on('product_added', (product) => {
+  console.log(`Nuevo producto recibido: ${JSON.stringify(product)}`);
+  // Obtener la lista de productos y agregar el nuevo producto
+  const productList = document.getElementById('product-list');
+  const productElement = document.createElement('li');
+  productElement.innerHTML = `${product.id} - ${product.title} - ${product.description} - ${product.price} - ${product.thumbnail} - ${product.code} - ${product.stock} - ${product.status} - ${product.category}`;
+  productList.appendChild(productElement);
+});
+
+});
+
+  
+    
+
+  
+    </script>
+</body>

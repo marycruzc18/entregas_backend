@@ -1,0 +1,89 @@
+<style>
+  
+    .custom-list-item {
+        background: #e1e1e1;
+    }
+    .active>.page-link {
+        background-color: #157347;
+        border-color: #157347;
+    }
+</style>
+
+
+<html>
+<div class="container-fluid">
+    <div class="row">
+        <header class="bg-dark text-white p-3">
+        <h1>Bienvenidos al Ecommerce</h1> 
+         </header>
+    </div>
+</div>
+<body>
+    <div class="container-fluid">
+       <div class="row">
+    <div class="col-12 mt-3">
+      <h1>Productos</h1>
+      <div class="row">
+        {{#each response.products}}
+        <div class="col-md-4">
+          <div class="card mb-4">
+            <img src="{{this.thumbnail}}" class="card-img-top" alt="Imagen del producto">
+            <div class="card-body">
+              <h5 class="card-title">{{this.title}}</h5>
+              <p class="card-text">{{this.description}}</p>
+              <p class="card-text"><strong>Precio: ${{this.price}}</strong></p>
+              <button class="btn btn-success" onclick="addToCart('{{this._id}}')"><i class="fas fa-cart-plus"></i> Agregar al carrito</button>
+            </div>
+          </div>
+        </div>
+        {{/each}}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row justify-content-center">
+  <p>Página {{response.page}} de {{response.totalPages}}</p>
+
+  <div class="col-md-4 col-xs-12">
+    <nav aria-label="Navigation row">
+      <ul class="pagination">
+        {{#if response.hasPrevPage}}
+        <li class="page-item"><a class="page-link" href="{{response.prevPageUrl}}"><<</a></li>
+        {{else}}
+        <li class="page-item disabled"><a class="page-link" href="{{response.prevPageUrl}}"><<</a></li>
+        {{/if}}
+
+        {{#each response.pages}}
+        <li class="page-item"><a class="page-link" href="{{this.url}}?page={{this.number}}">{{this.numberPgBar}}</a></li>
+        {{/each}}
+
+        {{#if response.hasNextPage}}
+        <li class="page-item"><a class="page-link" href="{{response.nextPageUrl}}">>></a></li>
+        {{else}}
+        <li class="page-item disabled"><a class="page-link" href="{{response.nextPageUrl}}">>></a></li>
+        {{/if}}
+      </ul>
+    </nav>
+  </div>
+</div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.6.1/socket.io.js"></script>
+    <script>
+        const socket = io();
+
+        socket.on('connect', () => {
+            console.log('El servidor ha confirmado la conexión');
+        });
+
+        socket.on('product_added_to_cart', (product) => {
+            console.log('Se disparó el evento product_added_to_cart con el id', product);
+        });
+
+        const addToCart = (product_id) => {
+            console.log('Agregar el producto al carrito', product_id);
+            socket.emit('new_product_in_cart', product_id);
+        }
+    </script>
+</body>
+</html>

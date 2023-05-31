@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat</title>
+</head>
+<body>
+  <div class="container-fluid">
+    <div class="row">
+      <header class="bg-dark text-white p-3">
+        <h1>Bienvenidos al Ecommerce</h1> 
+      </header>
+    </div>
+  </div>
+
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-12 m-t 3">
+        <h1>Chat</h1>
+        <div id="messages">
+          {{#each messages}}
+            <p><strong>{{user}}</strong> {{message}}</p>
+          {{/each}}
+        </div>
+        <form id="message-form" action="/chat" method="POST">
+          <input type="text" id="user" name="user" placeholder="Nombre de usuario" required>
+          <input type="text" id="message" name="message" placeholder="Escribe un mensaje..." required>
+          <button type="submit" class="btn btn-success">Enviar</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.6.1/socket.io.js"></script>
+
+  <script>
+    const socket = io();
+
+    socket.on('connect', () => {
+      console.log('El servidor ha confirmado la conexión');
+    });
+
+    socket.on('chat message', (message) => {
+      const messageElement = document.createElement('p');
+      messageElement.innerHTML = `<strong>${message.user}</strong> ${message.message}`;
+      document.getElementById('messages').appendChild(messageElement);
+    });
+
+    const messageForm = document.getElementById('message-form');
+
+    messageForm.addEventListener('submit', (event) => {
+      event.preventDefault();
+
+      const user = document.getElementById('user').value;
+      const message = document.getElementById('message').value;
+
+      socket.emit('chat message', { user, message });
+
+      document.getElementById('message').value = '';
+    });
+  </script>
+</body>
+</html>
