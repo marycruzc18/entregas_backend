@@ -1,0 +1,47 @@
+<style>
+  form {
+    background: #e1e1e1;
+    border-radius: 1em;
+  }
+</style>
+
+<div class="row justify-content-md-center">
+  <div class="col-md-4 col-xs-12 mt-4">
+    <h2 class="mb-4"><b>Registro de usuario</b></h2>
+
+    <!-- Formulario de registro -->
+    <form class="p-4" action="/register" method="post">
+      <!-- Campos del formulario -->
+      <div class="form-group mb-4">
+        <label for="first_name">Nombre:</label>
+        <input type="text" class="form-control" id="first_name" name="first_name" required>
+      </div>
+      <div class="form-group mb-4">
+        <label for="last_name">Apellido:</label>
+        <input type="text" class="form-control" id="last_name" name="last_name" required>
+      </div>
+      <div class="form-group mb-4">
+        <label for="email">Email:</label>
+        <input type="email" class="form-control" id="email" name="email" required>
+      </div>
+      <div class="form-group mb-4">
+        <label for="age">Edad:</label>
+        <input type="number" class="form-control" id="age" name="age" required>
+      </div>
+      <div class="form-group mb-4">
+        <label for="password">Contraseña:</label>
+        <input type="password" class="form-control" id="password" name="password" required>
+      </div>
+      <div class="form-group mb-4">
+        <button type="submit" class="btn btn-success">Registrarse</button>
+      </div>
+    </form>
+
+    <!-- Enlace para volver al inicio de sesión -->
+    <a href="/" class="btn btn-primary">Volver al inicio de sesión</a>
+  </div>
+</div>
+
+<script>
+  document.querySelector('form').innerHTML = template();
+</script>

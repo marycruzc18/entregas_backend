@@ -3,6 +3,8 @@ import {Router} from 'express'
 import { __dirname } from '../../utils.js';
 import productModel from '../../dao/models/products.model.js'
 import cartsModel from '../../dao/models/carts.model.js'
+import UserModel from '../../dao/models/user.model.js';
+
 
 
 
@@ -20,6 +22,29 @@ let carritos=[];
 const productRoutes = (io)  => {
 
 const router  = Router()
+
+router.get('/', async (req, res) => {
+  try {
+    if (req.session.userValidated) {
+      // El usuario está autenticado, obtener los productos asociados a ese usuario
+      const user = await UserModel.findById(req.session.userId).exec();
+
+      if (user) {
+        const products = await productModel.find({ _id: { $in: user.products } }).exec();
+
+        // Renderizar la página de productos con los datos correspondientes
+        return res.render('products', { response: { products } });
+      }
+    }
+
+    // El usuario no está autenticado o no tiene productos asociados
+    // Renderizar la página de inicio de sesión
+    res.render('login');
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error al obtener los productos' });
+  }
+});
 
 
 router.get('/products', async (req, res) => {

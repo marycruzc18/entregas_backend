@@ -4,6 +4,8 @@ import {} from 'dotenv/config'
 import http from 'http';
 import express from 'express';
 import mongoose from 'mongoose';
+import passport from 'passport';
+import initializePassport from './config/passport.config.js'
 import productRoutes from './api/products/products.routes.js';
 import userRoutes from './api/users/users.router.js'
 import loginRoutes from './api/login/login.routes.js'
@@ -14,6 +16,8 @@ import { Server } from 'socket.io';
 import session from 'express-session'
 //import FileStore from 'session-file-store';
 import MongoStore from 'connect-mongo';
+
+
 
 const PORT = parseInt(process.env.PORT) || 3000;
 const MONGOOSE_URL = process.env.MONGOOSE_URL;
@@ -34,6 +38,8 @@ const io = new Server(server, {
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+
+
 //const fileStorage= FileStore(session)
 //const store = new fileStorage({ path: `${__dirname}/sessions`, ttl:3600, retries: 0})}
 const store = MongoStore.create({
@@ -48,17 +54,33 @@ app.use(session({
   saveUninitialized : false
 }))
 
+initializePassport()
+app.use(passport.initialize());
+app.use(passport.session());
 
 app.use('/', productRoutes(io));
-app.use('/api/users', userRoutes);
+app.use('/', userRoutes);
 app.use('/', loginRoutes);
 app.use('/chat', chatRoutes);
 app.use('/public', express.static(`${__dirname}/public`));
+
+
+
 
 app.engine('handlebars', engine());
 app.set('view engine', 'handlebars');
 app.set('views', './views');
 
+
+app.get('/auth/github', passport.authenticate('github'));
+app.get(
+  '/githubcallback',
+  passport.authenticate('github', { failureRedirect: '/login' }),
+  (req, res) => {
+    // Redireccionar al usuario después de la autenticación exitosa
+    res.redirect('/products');
+  }
+);
 
 io.on('connection', (socket) => {
   console.log(`Cliente conectado (${socket.id})`);
