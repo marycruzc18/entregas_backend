@@ -26,6 +26,14 @@
       <button type="submit" class="btn btn-success"><i class="fas fa-sign-in-alt"></i> Ingresar</button>
       <a href="/register" class="btn btn-primary">Registrarse</a>
       <a href="/githubcallback" class="btn btn-primary">Iniciar sesión con GitHub</a>
+      
+      <!-- Mostrar mensaje de bienvenida y nombre del usuario -->
+        {{#if user}}
+        <div class="alert alert-success mt-4" role="alert">
+          Bienvenido, {{user.first_name}} {{user.last_name}}!
+        </div>
+        {{/if}}
+
 
       
       {{#if error}}

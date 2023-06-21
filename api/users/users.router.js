@@ -12,7 +12,7 @@ router.get('/register', (req, res) => {
 
 // Registro de usuario
 router.post('/register', async (req, res) => {
-  const { first_name, last_name, email, age, password } = req.body;
+  const { first_name, last_name, email, age, password,Cart,role } = req.body;
 
   try {
     // Verificar si ya existe un usuario con el mismo correo electrónico
@@ -30,6 +30,8 @@ router.post('/register', async (req, res) => {
       email,
       age,
       password: hashedPassword, // Usar la contraseña encriptada
+      cart:Cart,
+      role
     });
 
     await newUser.save();
@@ -44,8 +46,23 @@ router.post('/register', async (req, res) => {
 
 // Formulario de inicio de sesión
 router.get('/login', (req, res) => {
-  res.render('login');
+  // Verificar si el usuario está autenticado
+  if (req.session.userValidated) {
+    // Obtener el objeto de usuario y pasarlo a la plantilla
+    UserModel.findById(req.session.userId, (err, user) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).json({ message: 'Error en el inicio de sesión' });
+      }
+
+      res.render('login', { user });
+    });
+  } else {
+    res.render('login');
+  }
 });
+
+
 
 // Inicio de sesión
 router.post('/login', async (req, res) => {
@@ -71,14 +88,15 @@ router.post('/login', async (req, res) => {
     // La contraseña coincide, iniciar sesión y redirigir al dashboard
     req.session.userValidated = true; // Establecer la autenticación del usuario en la sesión
     req.session.userId = user._id; // Guardar el ID del usuario en la sesión
-    return res.redirect('/dashboard');
+    req.session.user = user; // Guardar el objeto de usuario en la sesión
+    return res.redirect('/api/sessions/current');
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: 'Error en el inicio de sesión' });
   }
 });
 
-router.get('/dashboard', async (req, res) => {
+router.get('/api/sessions/current', async (req, res) => {
   try {
     if (!req.session.userValidated) {
       // El usuario no está autenticado, redireccionar al inicio de sesión
