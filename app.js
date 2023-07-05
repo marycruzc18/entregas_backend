@@ -6,10 +6,10 @@ import express from 'express';
 import mongoose from 'mongoose';
 import passport from 'passport';
 import initializePassport from './config/passport.config.js'
-import productRoutes from './api/products/products.routes.js';
-import userRoutes from './api/users/users.router.js'
-import loginRoutes from './api/login/login.routes.js'
-import chatRoutes from './api/chat.routes.js'
+import productRoutes from './api/routes/products.routes.js';
+import userRoutes from './api/routes/users.router.js'
+import loginRoutes from './api/routes/login.routes.js'
+import chatRoutes from './api/routes/chat.routes.js'
 import { __dirname } from './utils.js';
 import { engine } from 'express-handlebars';
 import { Server } from 'socket.io';
@@ -58,7 +58,7 @@ initializePassport()
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.use('/', productRoutes(io));
+app.use('/', productRoutes);
 app.use('/', userRoutes);
 app.use('/', loginRoutes);
 app.use('/chat', chatRoutes);
