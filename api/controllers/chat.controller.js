@@ -1,6 +1,7 @@
 import messagesModel from '../../dao/models/messages.model.js';
 import {io} from '../../app.js'
 
+
 async function renderChat(req, res) {
   try {
     const messages = await messagesModel.find().sort('-timestamp');
