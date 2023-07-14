@@ -1,20 +1,25 @@
-import UserModel from '../../dao/models/user.model.js';
 import productModel from '../../dao/models/products.model.js';
+import UserRepository from '../repository/user.repository.js';
+import UserDTO from '../dto/user.dto.js';
 import bcrypt from 'bcrypt';
 
 class UserController {
+  constructor() {
+    this.userRepository = new UserRepository();
+  }
+
   async registerUser(req, res) {
     const { first_name, last_name, email, age, password, Cart, role } = req.body;
 
     try {
-      const existingUser = await UserModel.findOne({ email });
+      const existingUser = await this.userRepository.findByEmail(email);
       if (existingUser) {
         return res.render('register', { error: 'El correo electrónico ya está registrado' });
       }
 
       const hashedPassword = await bcrypt.hash(password, 10);
 
-      const newUser = new UserModel({
+      const newUser = {
         first_name,
         last_name,
         email,
@@ -22,9 +27,9 @@ class UserController {
         password: hashedPassword,
         cart: Cart,
         role,
-      });
+      };
 
-      await newUser.save();
+      await this.userRepository.create(newUser);
 
       return res.render('registerSuccess');
     } catch (error) {
@@ -37,7 +42,7 @@ class UserController {
     const { email, password } = req.body;
 
     try {
-      const user = await UserModel.findOne({ email });
+      const user = await this.userRepository.findByEmail(email);
 
       if (!user) {
         return res.render('login', { error: 'Usuario no encontrado' });
@@ -65,7 +70,7 @@ class UserController {
         return res.redirect('/login');
       }
 
-      const user = await UserModel.findById(req.session.userId).exec();
+      const user = await this.userRepository.findById(req.session.userId);
 
       if (!user || !Array.isArray(user.products)) {
         return res.render('products', { response: { error: 'No se encontraron productos asociados al usuario' } });
@@ -81,6 +86,29 @@ class UserController {
       return res.render('products', { response: { error: 'Error al obtener los productos' } });
     }
   }
-}
 
+
+async getCurrentUser(req, res) {
+  try {
+    if (!req.session.userValidated) {
+      return res.redirect('/login');
+    }
+
+    const user = await this.userRepository.findById(req.session.userId);
+
+    if (!user || !Array.isArray(user.products)) {
+      return res.render('products', { response: { error: 'No se encontraron productos asociados al usuario' } });
+    }
+
+    const productIds = user.products;
+
+    const products = await productModel.find({ _id: { $in: productIds } }).exec();
+
+    return res.render('products', { response: { products } });
+  } catch (error) {
+    console.error(error);
+    return res.render('products', { response: { error: 'Error al obtener los productos' } });
+  }
+}
+}
 export default UserController;

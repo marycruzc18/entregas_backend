@@ -10,13 +10,14 @@ import productRoutes from './api/routes/products.routes.js';
 import userRoutes from './api/routes/users.router.js'
 import loginRoutes from './api/routes/login.routes.js'
 import chatRoutes from './api/routes/chat.routes.js'
+import UserController from './api/controllers/user.controller.js';
 import { __dirname } from './utils.js';
 import { engine } from 'express-handlebars';
 import { Server } from 'socket.io';
 import session from 'express-session'
 //import FileStore from 'session-file-store';
 import MongoStore from 'connect-mongo';
-
+import { authenticateUser, authorize }from './api/Middleware/authMiddleware.js';
 
 
 const PORT = parseInt(process.env.PORT) || 3000;
@@ -47,12 +48,18 @@ const store = MongoStore.create({
   mongoOptions: {},
   ttl: 30
 });
+
+
+
 app.use(session({
   store:store,
   secret: SESSION_SECRET,
   resave: false,
   saveUninitialized : false
 }))
+
+
+
 
 initializePassport()
 app.use(passport.initialize());
@@ -64,8 +71,11 @@ app.use('/', loginRoutes);
 app.use('/chat', chatRoutes);
 app.use('/public', express.static(`${__dirname}/public`));
 
+// Aplicar el middleware de autenticación del usuario antes de authorize
+app.use(authenticateUser);
 
-
+// Aplicar el middleware authorize
+app.use(authorize(['admin']));
 
 app.engine('handlebars', engine());
 app.set('view engine', 'handlebars');
@@ -81,6 +91,9 @@ app.get(
     res.redirect('/products');
   }
 );
+
+const userController = new UserController();
+app.get('/current', userController.getCurrentUser.bind(userController));
 
 io.on('connection', (socket) => {
   console.log(`Cliente conectado (${socket.id})`);
