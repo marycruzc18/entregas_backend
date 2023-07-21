@@ -2,6 +2,9 @@ import fs from 'fs';
 import { Router } from 'express';
 import productModel from '../../dao/models/products.model.js';
 import UserModel from '../../dao/models/user.model.js';
+import { authenticateUser } from '../Middleware/authMiddleware.js'
+import getErrorMessage from '../../api/errorHandler.js';
+
 
 const ArchivoProductos = './productos.json';
 
@@ -17,7 +20,7 @@ class ProductController {
     this.router.get('/', this.getProducts.bind(this));
     this.router.get('/products', this.getAllProducts.bind(this));
     this.router.get('/realtimeproducts', this.getRealtimeProducts.bind(this));
-    this.router.post('/api/products', this.createProduct.bind(this));
+    this.router.post('/api/products', authenticateUser, this.createProduct.bind(this));
     this.router.get('/api/products', this.getFilteredProducts.bind(this));
     this.router.get('/api/products/:pid', this.getProductById.bind(this));
     this.router.put('/api/products/:pid', this.updateProduct.bind(this));
@@ -96,13 +99,17 @@ class ProductController {
   async createProduct(req, res) {
     try {
       const product = req.body;
+      console.log('Nuevo producto:', product);
       const newProduct = await productModel.create(product);
-      res.status(201).send({ mensaje: 'Producto creado exitosamente' });
+      console.log('Producto creado:', newProduct); // Agregar este console.log
+      res.status(201).send({ mensaje: getErrorMessage('PRODUCT_CREATE_SUCCESSFULLY') });
     } catch (error) {
       console.error(error);
-      res.status(500).send({ mensaje: 'Error al crear el producto' });
+      res.status(500).send({ mensaje: getErrorMessage('ERROR_CREATING_THE_PRODUCT') });
     }
   }
+  
+  
 
   async getFilteredProducts(req, res) {
     try {

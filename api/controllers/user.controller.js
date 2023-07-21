@@ -30,7 +30,7 @@ class UserController {
       };
 
       await this.userRepository.create(newUser);
-
+      req.session.userValidated = true;
       return res.render('registerSuccess');
     } catch (error) {
       console.error(error);
