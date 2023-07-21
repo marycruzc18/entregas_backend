@@ -12,12 +12,15 @@ import loginRoutes from './api/routes/login.routes.js'
 import chatRoutes from './api/routes/chat.routes.js'
 import UserController from './api/controllers/user.controller.js';
 import { __dirname } from './utils.js';
+import { generateUser } from './utils.js'
 import { engine } from 'express-handlebars';
 import { Server } from 'socket.io';
 import session from 'express-session'
 //import FileStore from 'session-file-store';
 import MongoStore from 'connect-mongo';
 import { authenticateUser, authorize }from './api/Middleware/authMiddleware.js';
+import nodemailer from 'nodemailer';
+
 
 
 const PORT = parseInt(process.env.PORT) || 3000;
@@ -59,7 +62,48 @@ app.use(session({
 }))
 
 
+const transporter = nodemailer.createTransport({
+  service: 'Gmail',
+  port:587,
+  auth: {
+    user: 'USER',
+    pass: 'PASS'
+  }
+});
 
+
+app.get('/mail', (req, res) => {
+  const title = req.query.title;
+  const description = req.query.description;
+  const mensaje = `Gracias, ${title}, tu solicitud del producto ${description} ha sido aprobada`;
+
+  const mailOptions = {
+    from: 'USER',
+    to: 'ccccodigo@gmail.com',
+    subject: 'Solicitud Aprobada',
+    text: 'Gracias por su compra',
+  };
+
+  transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
+      console.log(error);
+    } else {
+      console.log('Correo electrónico enviado: ' + info.response);
+    }
+  });
+
+  res.send('Correo electrónico enviado correctamente');
+});
+
+
+app.get('/mockingproducts', (req, res) => {
+  const products = [];
+  for (let i = 0; i < 100; i++) {
+    products.push(generateUser());
+  }
+
+  res.json(products);
+});
 
 initializePassport()
 app.use(passport.initialize());
