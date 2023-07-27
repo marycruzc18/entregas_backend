@@ -6,6 +6,8 @@ import express from 'express';
 import mongoose from 'mongoose';
 import passport from 'passport';
 import initializePassport from './config/passport.config.js'
+import logger from './api/logger.js'
+import loggerRouter from './api/routes/logger.routes.js'
 import productRoutes from './api/routes/products.routes.js';
 import userRoutes from './api/routes/users.router.js'
 import loginRoutes from './api/routes/login.routes.js'
@@ -20,6 +22,7 @@ import session from 'express-session'
 import MongoStore from 'connect-mongo';
 import { authenticateUser, authorize }from './api/Middleware/authMiddleware.js';
 import nodemailer from 'nodemailer';
+
 
 
 
@@ -79,7 +82,7 @@ app.get('/mail', (req, res) => {
 
   const mailOptions = {
     from: 'USER',
-    to: 'ccccodigo@gmail.com',
+    to: '',
     subject: 'Solicitud Aprobada',
     text: 'Gracias por su compra',
   };
@@ -105,21 +108,27 @@ app.get('/mockingproducts', (req, res) => {
   res.json(products);
 });
 
+
+
 initializePassport()
 app.use(passport.initialize());
 app.use(passport.session());
 
+app.use('/loggerTest',loggerRouter)
+app.use('/public', express.static(`${__dirname}/public`));
 app.use('/', productRoutes);
 app.use('/', userRoutes);
 app.use('/', loginRoutes);
 app.use('/chat', chatRoutes);
-app.use('/public', express.static(`${__dirname}/public`));
+
 
 // Aplicar el middleware de autenticación del usuario antes de authorize
 app.use(authenticateUser);
 
 // Aplicar el middleware authorize
 app.use(authorize(['admin']));
+
+
 
 app.engine('handlebars', engine());
 app.set('view engine', 'handlebars');
