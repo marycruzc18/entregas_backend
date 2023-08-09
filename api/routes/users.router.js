@@ -18,5 +18,11 @@ router.post('/login', userController.loginUser.bind(userController));
 
 router.get('/api/sessions/current', userController.getCurrentSession.bind(userController));
 
+router.post('/send-password-reset-email', userController.sendPasswordResetEmail.bind(userController));
+
+router.get('/reset/:token', userController.showPasswordResetForm.bind(userController));
+
+router.post('/reset/:token', userController.resetPassword.bind(userController));
+
 export default router;
 
