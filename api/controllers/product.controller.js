@@ -99,15 +99,22 @@ class ProductController {
   async createProduct(req, res) {
     try {
       const product = req.body;
+      if (!product.owner) {
+        product.owner = "admin";
+      }
       console.log('Nuevo producto:', product);
+      
       const newProduct = await productModel.create(product);
-      console.log('Producto creado:', newProduct); // Agregar este console.log
+      
+      console.log('Producto creado:', newProduct);
+  
       res.status(201).send({ mensaje: getErrorMessage('PRODUCT_CREATE_SUCCESSFULLY') });
     } catch (error) {
       console.error(error);
       res.status(500).send({ mensaje: getErrorMessage('ERROR_CREATING_THE_PRODUCT') });
     }
   }
+  
   
   
 
@@ -153,30 +160,46 @@ class ProductController {
   async updateProduct(req, res) {
     try {
       const updatedProduct = await productModel.findByIdAndUpdate(req.params.pid, req.body, { new: true });
-      if (updatedProduct) {
+  
+      if (req.session.user.role === 'admin' || (req.session.user.role === 'premium' && updatedProduct.owner === req.session.user.email)) {
+        
         res.status(200).send({ mensaje: 'Producto actualizado' });
       } else {
-        res.status(404).send({ mensaje: 'ERROR: No hay producto con ese id, no se puede actualizar' });
+        res.status(403).send({ mensaje: 'No tienes permiso para actualizar este producto' });
       }
     } catch (error) {
       console.error(error);
       res.status(500).send({ mensaje: 'Error al actualizar el producto' });
     }
   }
+  
 
   async deleteProduct(req, res) {
+    const productId = req.params.pid;
+  
     try {
-      const deletedProduct = await productModel.findByIdAndDelete(req.params.pid);
-      if (deletedProduct) {
-        res.status(200).send({ mensaje: 'Producto eliminado' });
-      } else {
-        res.status(404).send({ mensaje: 'No se encontró el producto' });
+      const product = await productModel.findById(productId);
+  
+      if (!product) {
+        return res.status(404).json({ message: 'Producto no encontrado' });
       }
+  
+      const userRole = req.session.user.role;
+  
+      if (userRole === 'premium' && product.owner !== req.session.user.email) {
+        return res.status(403).json({ message: 'No tienes permiso para eliminar este producto' });
+      }
+  
+      await productModel.findByIdAndDelete(productId);
+  
+      return res.status(204).json({ message: 'Producto eliminado exitosamente' });
     } catch (error) {
       console.error(error);
-      res.status(500).send({ mensaje: 'Error al eliminar el producto' });
+      return res.status(500).json({ message: 'Error al eliminar el producto' });
     }
   }
+  
+  
 
   async getProductById(req, res) {
     try {
