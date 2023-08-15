@@ -39,6 +39,7 @@ class UserController {
   }
 
   async loginUser(req, res) {
+  
     const { email, password } = req.body;
 
     try {
