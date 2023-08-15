@@ -4,6 +4,9 @@ import {} from 'dotenv/config'
 import http from 'http';
 import express from 'express';
 import mongoose from 'mongoose';
+import swaggerUi from 'swagger-ui-express';
+import swaggerProducts from './api/swaggerProducts.js';
+import swaggerCart from './api/swagger.Cart.js';
 import passport from 'passport';
 import initializePassport from './config/passport.config.js'
 import logger from './api/logger.js'
@@ -122,13 +125,16 @@ app.use('/', loginRoutes);
 app.use('/chat', chatRoutes);
 
 
-// Aplicar el middleware de autenticación del usuario antes de authorize
-app.use(authenticateUser);
+
+app.use('/swagger/products', swaggerUi.serve, swaggerUi.setup(swaggerProducts));
+app.use('/swagger/cart', swaggerUi.serve, swaggerUi.setup(swaggerCart));
 
 // Aplicar el middleware authorize
 app.use(authorize(['admin']));
 
-
+// Aplicar el middleware de autenticación del usuario antes de authorize
+app.use(authenticateUser);
+ 
 
 app.engine('handlebars', engine());
 app.set('view engine', 'handlebars');
