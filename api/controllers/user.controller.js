@@ -1,7 +1,7 @@
 import productModel from '../../dao/models/products.model.js';
 import UserRepository from '../repository/user.repository.js';
+import UserDTO from '../dto/user.dto.js';
 import bcrypt from 'bcrypt';
-import nodemailer from 'nodemailer';
 
 class UserController {
   constructor() {
@@ -87,6 +87,7 @@ class UserController {
     }
   }
 
+
 async getCurrentUser(req, res) {
   try {
     if (!req.session.userValidated) {
@@ -109,102 +110,5 @@ async getCurrentUser(req, res) {
     return res.render('products', { response: { error: 'Error al obtener los productos' } });
   }
 }
-
-async sendPasswordResetEmail(req, res) {
-  const { email } = req.body;
-
-  try {
-    const user = await this.userRepository.findByEmail(email);
-
-    if (!user) {
-      return res.render('passwordReset', { error: 'Usuario no encontrado' });
-    }
-
-    const { token, expiration } = generateTokenAndExpiration();
-    await this.userRepository.saveResetToken(user._id, token, expiration);
-
-    const resetLink = `${process.env.APP_URL}/reset/${token}`;
-    
-    const transporter = nodemailer.createTransport({
-      service: 'Gmail',
-      port: 587,
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASSWORD,
-      },
-    });
-    
-    const mailOptions = {
-      from: process.env.EMAIL_USER,
-      to: user.email,
-      subject: 'Restablecer Contraseña',
-      html: `
-        <p>Hola ${user.first_name},</p>
-        <p>Has solicitado restablecer tu contraseña. Por favor, haz clic en el siguiente enlace:</p>
-        <a href="${resetLink}">Restablecer Contraseña</a>
-        <p>Este enlace expirará en 1 hora.</p>
-      `,
-    };
-
-    transporter.sendMail(mailOptions, (error, info) => {
-      if (error) {
-        console.error(error);
-        return res.status(500).json({ message: 'Error al enviar el correo' });
-      } else {
-        console.log('Correo electrónico enviado: ' + info.response);
-        return res.render('passwordResetSuccess');
-      }
-    });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: 'Error en la recuperación de contraseña' });
-  }
-}
-
-async showPasswordResetForm(req, res) {
-  const token = req.params.token;
-  const isValidToken = await verifyTokenAndExpiration(token);
-
-  if (isValidToken) {
-    return res.render('passwordResetForm', { token });
-  } else {
-    return res.redirect('/token-expired');
-  }
-}
-
-async resetPassword(req, res) {
-  const token = req.params.token;
-  const newPassword = req.body.newPassword;
-
-  try {
-    const isValidToken = await verifyTokenAndExpiration(token);
-
-    if (isValidToken) {
-      const user = await this.userRepository.findByResetToken(token);
-
-      if (!user) {
-        return res.render('passwordResetForm', { token, error: 'Usuario no encontrado' });
-      }
-
-      if (newPassword === user.password) {
-        return res.render('passwordResetForm', { token, error: 'No puedes usar la misma contraseña' });
-      }
-
-      await this.userRepository.updatePassword(user._id, newPassword);
-      await this.userRepository.deleteResetToken(user._id, token);
-
-      return res.redirect('/login');
-    } else {
-      return res.render('passwordResetForm', { token, error: 'Enlace expirado o inválido' });
-    }
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: 'Error en el restablecimiento de contraseña' });
-  }
-}
-
-
-
-
 }
 export default UserController;
