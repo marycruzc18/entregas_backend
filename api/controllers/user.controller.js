@@ -27,6 +27,7 @@ class UserController {
         password: hashedPassword,
         cart: Cart,
         role,
+        documents: []
       };
 
       await this.userRepository.create(newUser);
@@ -54,6 +55,9 @@ class UserController {
       if (!passwordMatch) {
         return res.render('login', { error: 'Contraseña incorrecta' });
       }
+
+      user.last_connection = new Date();
+      await user.save();
 
       req.session.userValidated = true;
       req.session.userId = user._id;
@@ -204,7 +208,36 @@ async resetPassword(req, res) {
   }
 }
 
+async updateUserToPremium(userId) {
+  try {
+    // Busca al usuario por su ID
+    const user = await User.findById(userId);
 
+    if (!user) {
+      throw new Error('Usuario no encontrado');
+    }
+
+    // Verifica si el usuario ha cargado todos los documentos requeridos
+    const documentosRequeridos = ['Identificación', 'Comprobante de domicilio', 'Comprobante de estado de cuenta'];
+    const documentosCargados = user.documents.map(doc => doc.name);
+
+    const documentosFaltantes = documentosRequeridos.filter(doc => !documentosCargados.includes(doc));
+
+    if (documentosFaltantes.length > 0) {
+      throw new Error('Faltan documentos requeridos para ser premium');
+    }
+
+    // Actualiza el rol del usuario a "premium"
+    user.role = 'premium';
+
+    // Guarda los cambios en la base de datos
+    await user.save();
+
+    return user; // Devuelve el usuario actualizado
+  } catch (error) {
+    throw error;
+  }
+}
 
 
 }

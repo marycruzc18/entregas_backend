@@ -9,7 +9,6 @@ import swaggerProducts from './api/swaggerProducts.js';
 import swaggerCart from './api/swagger.Cart.js';
 import passport from 'passport';
 import initializePassport from './config/passport.config.js'
-import logger from './api/logger.js'
 import loggerRouter from './api/routes/logger.routes.js'
 import productRoutes from './api/routes/products.routes.js';
 import userRoutes from './api/routes/users.router.js'
@@ -25,6 +24,7 @@ import session from 'express-session'
 import MongoStore from 'connect-mongo';
 import { authenticateUser, authorize }from './api/Middleware/authMiddleware.js';
 import nodemailer from 'nodemailer';
+import multer from 'multer';
 
 
 
@@ -44,6 +44,8 @@ const io = new Server(server, {
     }
 });
 
+const storage = multer.memoryStorage(); 
+const upload = multer({ storage });
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -66,6 +68,47 @@ app.use(session({
   resave: false,
   saveUninitialized : false
 }))
+
+
+app.post('/upload', (req, res) => {
+  try {
+    const { fileType } = req.body; 
+
+    let uploadFolder;
+
+    // Determina la carpeta de destino según el tipo de archivo
+    switch (fileType) {
+      case 'profile':
+        uploadFolder = 'profiles';
+        break;
+      case 'product':
+        uploadFolder = 'products';
+        break;
+      case 'document':
+        uploadFolder = 'documents';
+        break;
+      default:
+        return res.status(400).json({ message: 'Tipo de archivo no válido' });
+    }
+
+    // Configura el destino para Multer
+    upload.destination = (req, file, cb) => {
+      cb(null, `./uploads/${uploadFolder}`);
+    };
+
+    // Llama al middleware de Multer para procesar la subida
+    upload.array('files')(req, res, (err) => {
+      if (err) {
+        return res.status(500).json({ message: 'Error al subir el archivo' });
+      }
+
+      return res.status(200).json({ message: 'Archivo subido correctamente' });
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Error al subir el archivo' });
+  }
+});
 
 
 const transporter = nodemailer.createTransport({
