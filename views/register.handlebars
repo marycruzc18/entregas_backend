@@ -11,7 +11,25 @@
 
     <!-- Formulario de registro -->
     <form class="p-4" action="/register" method="post">
-      <!-- Campos del formulario -->
+   
+      <div id="form-content"></div>
+
+      <div class="form-group mb-4">
+        <button type="submit" class="btn btn-success">Registrarse</button>
+      </div>
+    </form>
+
+  
+    <a href="/" class="btn btn-primary">Volver al inicio de sesión</a>
+  </div>
+</div>
+
+
+<script>
+ 
+  function template() {
+    return `
+      <!-- Campos del formulario generados dinámicamente -->
       <div class="form-group mb-4">
         <label for="first_name">Nombre:</label>
         <input type="text" class="form-control" id="first_name" name="first_name" required>
@@ -33,15 +51,12 @@
         <input type="password" class="form-control" id="password" name="password" required>
       </div>
       <div class="form-group mb-4">
-        <button type="submit" class="btn btn-success">Registrarse</button>
+       <label for="file">Selecciona un archivo:</label>
+       <input type="file" class="form-control-file" id="file" name="file" accept=".jpg, .jpeg, .png, .pdf, .docx">
       </div>
-    </form>
+    `;
+  }
 
-    <!-- Enlace para volver al inicio de sesión -->
-    <a href="/" class="btn btn-primary">Volver al inicio de sesión</a>
-  </div>
-</div>
-
-<script>
-  document.querySelector('form').innerHTML = template();
+ 
+  document.getElementById('form-content').innerHTML = template();
 </script>

@@ -1,5 +1,5 @@
 const authenticateUser = (req, res, next) => {
-    if (req.session.userValidated) {
+    if (req.session.userValidated || req.path.startsWith('/api-docs') || req.path === '/login') {
       // El usuario está autenticado, puedes continuar con la siguiente función de middleware
       next();
     } else {
